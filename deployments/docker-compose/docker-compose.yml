@@ -2,8 +2,10 @@ version: "3"
 services:
 
   pronestheus:  
-    build: .
-    container-name: pronestheus
+    build: 
+      context: . 
+      dockerfile: Dockerfile
+    container_name: pronestheus
     image: grdl/pronestheus:latest
     ports:
       - "9777:9777"

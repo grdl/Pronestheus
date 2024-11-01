@@ -3,9 +3,17 @@
 ## JS Mods 
 
 - `git clone`
-- `cd pronestheus/deployments/docker-compose`
-- Update .env 
-- `docker-compose up -d --build`
+- `cd pronestheus`
+- Update `.env` 
+- Build the docker image and run 
+```
+docker buildx create --use
+docker buildx build --platform linux/amd64 -t grdl/pronestheus:latest --load .
+docker-compose up -d --build
+```
+
+
+
 
 
 
