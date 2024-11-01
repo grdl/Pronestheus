@@ -62,6 +62,7 @@ type Collector struct {
 
 // Metrics contains the metrics collected by the Collector.
 type Metrics struct {
+<<<<<<< HEAD
 	up               *prometheus.Desc
 	ambientTemp      *prometheus.Desc
 	setpointTemp     *prometheus.Desc
@@ -74,6 +75,15 @@ type Metrics struct {
     modeHeat         *prometheus.Desc
     modeCool         *prometheus.Desc
     modeHeatCool     *prometheus.Desc
+=======
+	up           *prometheus.Desc
+	ambientTemp  *prometheus.Desc
+	setpointTemp *prometheus.Desc
+	setpointTempHvac *prometheus.Desc
+	humidity     *prometheus.Desc
+	heating      *prometheus.Desc
+	cooling      *prometheus.Desc
+>>>>>>> d4ae12b3f2aee5d5a10cadef0a6e31a3f315c4dc
 }
 
 // New creates a Collector using the given Config.
@@ -112,6 +122,7 @@ func New(cfg Config) (*Collector, error) {
 }
 
 func buildMetrics() *Metrics {
+<<<<<<< HEAD
     var nestLabels = []string{"id", "label"}
     return &Metrics{
         up:               prometheus.NewDesc("nest_up", "Was talking to Nest API successful.", nil, nil),
@@ -126,6 +137,17 @@ func buildMetrics() *Metrics {
 		modeHeat: prometheus.NewDesc("nest_thermostat_mode_heat", "Thermostat mode HEAT", nestLabels, nil),
 		modeCool: prometheus.NewDesc("nest_thermostat_mode_cool", "Thermostat mode COOL", nestLabels, nil),
 		modeHeatCool: prometheus.NewDesc("nest_thermostat_mode_heatcool", "Thermostat mode HEATCOOL", nestLabels, nil),
+=======
+	var nestLabels = []string{"id", "label"}
+	return &Metrics{
+		up:           prometheus.NewDesc(strings.Join([]string{"nest", "up"}, "_"), "Was talking to Nest API successful.", nil, nil),
+		ambientTemp:  prometheus.NewDesc("nest_ambient_temperature_fahrenheit", "Inside temperature in Fahrenheit.", nestLabels, nil),
+		setpointTemp: prometheus.NewDesc("nest_setpoint_temperature_fahrenheit", "Setpoint temperature in Fahrenheit.", nestLabels, nil),
+		setpointTempHvac: prometheus.NewDesc("nest_setpoint_temperature_hvac_fahrenheit", "Setpoint Hvac temperature in Fahrenheit.", nestLabels, nil),
+		humidity:     prometheus.NewDesc(strings.Join([]string{"nest", "humidity", "percent"}, "_"), "Inside humidity.", nestLabels, nil),
+		heating:      prometheus.NewDesc(strings.Join([]string{"nest", "heating"}, "_"), "Is thermostat heating.", nestLabels, nil),
+		cooling:      prometheus.NewDesc(strings.Join([]string{"nest", "cooling"}, "_"), "Is thermostat cooling.", nestLabels, nil),
+>>>>>>> d4ae12b3f2aee5d5a10cadef0a6e31a3f315c4dc
 	}
 }  
 
@@ -138,6 +160,7 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.metrics.humidity
 	ch <- c.metrics.heating
 	ch <- c.metrics.cooling
+<<<<<<< HEAD
 }
 
 func modeToFloat(mode string) float64 {
@@ -153,6 +176,8 @@ func modeToFloat(mode string) float64 {
     default:
         return -1 // Unknown mode
     }
+=======
+>>>>>>> d4ae12b3f2aee5d5a10cadef0a6e31a3f315c4dc
 }
 
 // Collect implements the prometheus.Collector interface.
@@ -176,6 +201,7 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(c.metrics.humidity, prometheus.GaugeValue, therm.Humidity, labels...)
 		ch <- prometheus.MustNewConstMetric(c.metrics.heating, prometheus.GaugeValue, b2f(therm.Status == "HEATING"), labels...)
 		ch <- prometheus.MustNewConstMetric(c.metrics.cooling, prometheus.GaugeValue, b2f(therm.Status == "COOLING"), labels...)
+<<<<<<< HEAD
 
 		ch <- prometheus.MustNewConstMetric(c.metrics.modeOff, prometheus.GaugeValue, b2f(therm.Mode == "OFF"), labels...)
 		ch <- prometheus.MustNewConstMetric(c.metrics.modeHeat, prometheus.GaugeValue, b2f(therm.Mode == "HEAT"), labels...)
@@ -189,6 +215,8 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 		if activeMode >= 0 {
 			ch <- prometheus.MustNewConstMetric(c.metrics.mode, prometheus.GaugeValue, 1, append(labels, therm.Mode)...)
 		}
+=======
+>>>>>>> d4ae12b3f2aee5d5a10cadef0a6e31a3f315c4dc
 	}
 }
 

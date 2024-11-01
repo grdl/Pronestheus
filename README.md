@@ -9,8 +9,11 @@ I've updated the tooling to support Fahrenheit and Imperial. Also I've added a c
 - Update your `.env` with the appropriate values 
 - Build the docker image and run 
 
+<<<<<<< HEAD
 Note: I've moved the Dockerfile and docker-compose.yml to the root directory of the project. I've also added some debugging statements for troubleshooting that can be used via `docker-compose logs`.
 
+=======
+>>>>>>> d4ae12b3f2aee5d5a10cadef0a6e31a3f315c4dc
 ```bash
 # clean past instances if they exist 
 docker-compose down --rmi all --volumes --remove-orphans
