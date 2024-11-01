@@ -66,10 +66,10 @@ type Metrics struct {
 func New(cfg Config) (*Collector, error) {
 	var units string
 	switch cfg.Unit {
-	case "", celsius:
-		units = "metric"
-	case fahrenheit:
+	case "", fahrenheit:
 		units = "imperial"
+	case celsius:
+		units = "metric"
 	default:
 		return nil, errInvalidTempUnit
 	}
@@ -95,7 +95,7 @@ func New(cfg Config) (*Collector, error) {
 
 func buildMetrics(unit string) *Metrics {
 	if unit == "" {
-		unit = "celsius"
+		unit = "fahrenheit"
 	}
 
 	return &Metrics{
@@ -116,49 +116,60 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements the prometheus.Describe interface.
 func (c *Collector) Collect(ch chan<- prometheus.Metric) {
-	weather, err := c.getWeatherReadings()
-	if err != nil {
-		ch <- prometheus.MustNewConstMetric(c.metrics.up, prometheus.GaugeValue, 0)
-		c.logger.Log("level", "error", "message", "Failed collecting OpenWeatherMap data", "stack", errors.WithStack(err))
-		return
-	}
+    weather, err := c.getWeatherReadings()
+    if err != nil {
+        ch <- prometheus.MustNewConstMetric(c.metrics.up, prometheus.GaugeValue, 0)
+        c.logger.Log("level", "error", "message", "Failed collecting OpenWeatherMap data", "stack", errors.WithStack(err))
+        return
+    }
 
-	c.logger.Log("level", "debug", "message", "Successfully collected OpenWeatherMap data")
+    // Log detailed weather data
+    c.logger.Log("level", "debug", "message", "Successfully collected OpenWeatherMap data",
+        "temperature", weather.Temperature, "humidity", weather.Humidity, "pressure", weather.Pressure)
 
-	ch <- prometheus.MustNewConstMetric(c.metrics.up, prometheus.GaugeValue, 1)
-	ch <- prometheus.MustNewConstMetric(c.metrics.temp, prometheus.GaugeValue, weather.Temperature)
-	ch <- prometheus.MustNewConstMetric(c.metrics.humidity, prometheus.GaugeValue, weather.Humidity)
-	ch <- prometheus.MustNewConstMetric(c.metrics.pressure, prometheus.GaugeValue, weather.Pressure)
+    ch <- prometheus.MustNewConstMetric(c.metrics.up, prometheus.GaugeValue, 1)
+    ch <- prometheus.MustNewConstMetric(c.metrics.temp, prometheus.GaugeValue, weather.Temperature)
+    ch <- prometheus.MustNewConstMetric(c.metrics.humidity, prometheus.GaugeValue, weather.Humidity)
+    ch <- prometheus.MustNewConstMetric(c.metrics.pressure, prometheus.GaugeValue, weather.Pressure)
+}
+
+func (c *Collector) urlContainsMetricUnits() bool {
+    return strings.Contains(c.url, "units=metric")
 }
 
 func (c *Collector) getWeatherReadings() (weather *Weather, err error) {
-	res, err := c.client.Get(c.url)
-	if err != nil {
-		return nil, errors.Wrap(errFailedRequest, err.Error())
-	}
+    c.logger.Log("level", "debug", "message", "Querying OpenWeatherMap API")
+    res, err := c.client.Get(c.url)
+    if err != nil {
+        return nil, errors.Wrap(errFailedRequest, err.Error())
+    }
+    defer res.Body.Close()
 
-	defer res.Body.Close()
+    body, err := ioutil.ReadAll(res.Body)
+    if err != nil {
+        return nil, errors.Wrap(errFailedReadingBody, err.Error())
+    }
 
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, errors.Wrap(errFailedReadingBody, err.Error())
-	}
+    if res.StatusCode != 200 {
+        return nil, errors.Wrap(errNon200Response, fmt.Sprintf("code: %d", res.StatusCode))
+    }
 
-	if res.StatusCode != 200 {
-		return nil, errors.Wrap(errNon200Response, fmt.Sprintf("code: %d", res.StatusCode))
-	}
+    var data map[string]json.RawMessage
+    err = json.Unmarshal(body, &data)
+    if err != nil {
+        return nil, errors.Wrap(errFailedUnmarshalling, err.Error())
+    }
 
-	var data map[string]json.RawMessage
+    err = json.Unmarshal(data["main"], &weather)
+    if err != nil {
+        return nil, errors.Wrap(errFailedUnmarshalling, err.Error())
+    }
 
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		return nil, errors.Wrap(errFailedUnmarshalling, err.Error())
-	}
+    // Convert to Fahrenheit if needed
+    if c.urlContainsMetricUnits() {
+        weather.Temperature = weather.Temperature*9/5 + 32
+    }
 
-	err = json.Unmarshal(data["main"], &weather)
-	if err != nil {
-		return nil, errors.Wrap(errFailedUnmarshalling, err.Error())
-	}
-
-	return weather, nil
+    return weather, nil
 }
+

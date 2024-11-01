@@ -2,18 +2,26 @@
 
 ## JS Mods 
 
-- `git clone`
+I've updated the tooling to support Fahrenheit and Imperial. Also I've added a couple extra measurements from the Nest API (e.g., current mode) and plan to add more. 
+
+- `git clone` the repo
 - `cd pronestheus`
-- Update `.env` 
+- Update your `.env` with the appropriate values 
 - Build the docker image and run 
+
+Note: I've moved the Dockerfile and docker-compose.yml to the root directory of the project. I've also added some debugging statements for troubleshooting that can be used via `docker-compose logs`.
+
+```bash
+# clean past instances if they exist 
+docker-compose down --rmi all --volumes --remove-orphans
+
+# build and start container 
+docker-compose up -d --build --force-recreate
 ```
-docker buildx create --use
-docker buildx build --platform linux/amd64 -t grdl/pronestheus:latest --load .
-docker-compose up -d --build
-```
 
+## Thermostat API Docs 
 
-
+- https://developers.google.com/nest/device-access/api/thermostat
 
 
 
