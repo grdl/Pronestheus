@@ -172,8 +172,8 @@ func (c *Collector) getNestReadings() (thermostats []*Thermostat, err error) {
 		thermostat := Thermostat{
 			ID:           device.Get("name").String(),
 			Label:        device.Get("traits.sdm\\.devices\\.traits\\.Info.customName").String(),
-			AmbientTemp:  device.Get("traits.sdm\\.devices\\.traits\\.Temperature.ambientTemperatureCelsius").Float(),
-			SetpointTemp: device.Get("traits.sdm\\.devices\\.traits\\.ThermostatTemperatureSetpoint.heatCelsius").Float(),
+			AmbientTemp:  device.Get("traits.sdm\\.devices\\.traits\\.Temperature.ambientTemperatureCelsius").Float() * 9/5 + 32,
+			SetpointTemp: device.Get("traits.sdm\\.devices\\.traits\\.ThermostatTemperatureSetpoint.heatCelsius").Float() * 9/5 + 32,
 			Humidity:     device.Get("traits.sdm\\.devices\\.traits\\.Humidity.ambientHumidityPercent").Float(),
 			Status:       device.Get("traits.sdm\\.devices\\.traits\\.ThermostatHvac.status").String(),
 		}

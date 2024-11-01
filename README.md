@@ -1,5 +1,14 @@
 # ProNestheus
 
+## JS Mods 
+
+- `git clone`
+- `cd pronestheus/deployments/docker-compose`
+- Update .env 
+- `docker-compose up -d --build`
+
+
+
 ![build](https://github.com/grdl/pronestheus/workflows/build/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/grdl/pronestheus)](https://goreportcard.com/report/github.com/grdl/pronestheus)
 
